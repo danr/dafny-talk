@@ -24,6 +24,9 @@
 
 %format xbar   = "\overline{x}"
 
+%format e1
+%format e2
+
 %format x3
 %format an     = "\mathit{a_n}"
 
@@ -147,10 +150,10 @@ Dafny $\rightarrow$ Boogie $\rightarrow$ Z3
 > WF ( e x ) =
 >     WF ( e ) ;
 >     WF ( x ) ;
->     assert Requires(tr e,tr x);
+>     assert Requires(Heap, tr e,tr x);
 > {-"\uncover<2->{"-}
 > tr : Dafny.Expr -> Boogie.Expr
-> tr ( e x ) = Apply(tr e,tr x)
+> tr ( e x ) = Apply(Heap, tr e,tr x)
 > tr ( \ x reads a requires b => c ) = ? {-"}"-}
 \end{frame}
 
@@ -185,11 +188,16 @@ axiom (forall x,j : int :: apply(f_closure(j),x) = x+j);
 
 > tr : Dafny.Expr -> Boogie.Expr
 > tr ( \ x reads a requires b => c ) = ?
+\pause
 
 \begin{verbatim}
-    var f := x reads a requires x != 0 => a[0] + 100 / x;
+var f := x reads a requires x != 0 => a[0] + 100 / x;
 \end{verbatim}
+
+\pause
+
 Translates to a triple record:
+
 \begin{verbatim}
 Handle([heap,int]int, [heap,int]bool, [heap,int]set)
 
@@ -198,10 +206,12 @@ Handle([heap,int]int, [heap,int]bool, [heap,int]set)
                 (lambda h, x :: Singleton(a)))
 \end{verbatim}
 
+\pause
+
 \begin{verbatim}
-function Apply(Handle,heap,int): int;
+function Apply(heap,Handle,int): int;
 (forall f,req,read,h,x ::
-        Apply(Handle(f,req,read),h,x) = f[h,x])
+        Apply(h,Handle(f,req,read),x) = f[h,x])
 \end{verbatim}
 \end{frame}
 
@@ -245,11 +255,11 @@ Why:
 
 > forall H h1 h2 xbar zo'u  (forall alpha, o : ref, f : Field alpha zo'u
 >                            o `elem` Reads(H,h1,xbar) ==> h1[o,f] = h2[o,f])
->                           ==>   Apply(H,h1,xbar) = Apply(H,h2,xbar)
+>                           ==>   Apply(h1,H,xbar) = Apply(h2,H,xbar)
 \pause
 > forall H h1 h2 xbar zo'u  (forall alpha, o : ref, f : Field alpha zo'u
 >                                 o `elem` Reads(H,h1,xbar) ==> h1[o,f] = h2[o,f])
->                           ==>   Requires(H,h1,xbar) = Requires(H,h2,xbar)
+>                           ==>   Requires(h1,H,xbar) = Requires(h2,H,xbar)
 
 \end{frame}
 
@@ -290,17 +300,29 @@ Conjectures about ``Functional'' (heap-less) Dafny:
 % why:
 %
 % operationally: the compiler is free to implement a function that crashes less often
+\begin{verbatim}
+function Apply(Handle,heap,int): int;
+
+(forall f,req,read,h,x ::
+        Apply(Handle(f,req,read),h,x) = f[h,x])
+\end{verbatim}\pause
+\begin{verbatim}
+function Requires(Handle,heap,int): bool;
+
+(forall f,req,read,h,x ::
+        req[h,x] ==> Requires(Handle(f,req,read),h,x)
+\end{verbatim}
+
 
 \end{frame}
 
 \begin{frame}[fragile]{Conclusion}
 
 \begin{itemize}
-\item Adding HOFs turned out to be difficult
-\item Surveys the landscape
-\item Call-backs works well (but need to be pure for now)
+\item Adding HOFs not trivial
+\item Callbacks work well
 \item Partial functions for termination
-\item Unsoundness sniping at \verb~http://rise4fun.com/Dafny~
+\item \verb~http://rise4fun.com/Dafny~
 \end{itemize}
 
 \end{frame}
