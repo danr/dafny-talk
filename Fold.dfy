@@ -15,13 +15,10 @@ datatype Expr = Add(List<Expr>) | Mul(List<Expr>) | Lit(int)
 function method Eval(e : Expr): int
 {
   match e
-    case Add(es) => Fold(es,0,(e,v) requires e < es => Eval(e) + v)
-    case Mul(es) => Fold(es,1,(e,v) requires e < es => Eval(e) * v)
+    case Add(es) => todo 
+    case Mul(es) => todo
     case Lit(i)  => i
 }
 
 method Main() {
-  var two := Lit(2);
-  var add := (x,y) => Add(Cons(x,Cons(y,Nil)));
-  assert Eval(add(two,two)) == 4;
 }

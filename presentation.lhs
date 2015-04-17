@@ -187,6 +187,7 @@ axiom (forall x,j : int :: apply(f_closure(j),x) = x+j);
 \begin{frame}[fragile]{Lambda functions in Dafny}
 
 > tr : Dafny.Expr -> Boogie.Expr
+> tr ( e x ) = Apply(Heap, tr e,tr x)
 > tr ( \ x reads a requires b => c ) = ?
 \pause
 
